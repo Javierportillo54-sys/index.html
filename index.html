@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14kScripts | Buy Scripts</title>
+    <meta name="description" content="Your trusted hub for verified Roblox Scripts.">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com/3.4.4"></script>
+    <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+    
+    <style>
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: var(--header-height, 80px);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        :root {
+            /* Updated to Purple Theme for 14kScripts */
+            --primary-color: #8b5cf6; /* Violet-500 */
+            --primary-darker: #6d28d9; /* Violet-700 */
+            --primary-light: #a78bfa; /* Violet-400 */
+            
+            --background-dark: #0f0f11; /* Slightly darker for neon contrast */
+            --background-light: #18181b;
+            --text-primary: #F9FAFB;
+            --text-secondary: #9ca3af;
+            --border-color: #27272a;
+            
+            --header-bg: rgba(15, 15, 17, 0.8);
+            --card-bg: rgba(24, 24, 27, 0.6);
+            --modal-card-bg: #18181b;
+            --button-secondary-bg: #27272a;
+            --button-secondary-hover-bg: #3f3f46;
+            --button-secondary-text: #F9FAFB;
+            --aurora-opacity: 0.15;
+        }
+
+        .bg-theme-dark { background-color: var(--background-dark); }
+        .bg-theme-card { background-color: var(--card-bg); }
+        .text-theme-primary { color: var(--text-primary); }
+        .text-theme-secondary { color: var(--text-secondary); }
+        
+        /* Neon Glow Effects */
+        .text-neon { color: var(--primary-color); text-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
+        .border-neon { border-color: var(--primary-color); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
+        .bg-neon { background-color: var(--primary-color); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+        .hover\:bg-neon-hover:hover { background-color: var(--primary-light); box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
+
+        .fade-in-section { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
+        
+        /* Interactive Card Styles */
+        .interactive-card { 
+            position: relative; 
+            transition: box-shadow 0.3s ease, transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            transform-style: preserve-3d; 
+            will-change: transform; 
+            border: 1px solid var(--border-color);
+        }
+        .interactive-card:hover { 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.3); 
+            border-color: var(--primary-color);
+        }
+        .interactive-card::before { 
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            border-radius: 0.5rem; 
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(139, 92, 246, 0.1), transparent 40%); 
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; 
+        }
+        .interactive-card:hover::before { opacity: 1; }
+
+        /* Preloader */
+        #preloader { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--background-dark); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
+        #preloader.loaded { opacity: 0; pointer-events: none; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Aurora Background (Purple tinted) */
+        .aurora-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
+        .aurora-spot { 
+            position: absolute; 
+            background-image: radial-gradient(circle, var(--primary-darker) 0%, transparent 60%); 
+            border-radius: 50%; 
+            filter: blur(80px); 
+            will-change: transform; 
+            pointer-events: none; 
+            opacity: var(--aurora-opacity); 
+        }
+
+        /* Snow/Particles */
+        #snow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: hidden; }
+        .snowflake { position: absolute; top: -10px; background-color: rgba(255,255,255,0.3); border-radius: 50%; animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(105vh); } }
+
+        .glowing-letter { display: inline-block; transition: transform 0.2s ease-in-out, text-shadow 0.2s ease-in-out; }
+        .glowing-letter:hover { transform: scale(1.15) translateY(-2px); text-shadow: 0 0 15px var(--primary-color); color: white; }
+
+        /* Code Block Styling */
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: var(--background-dark); }
+        body::-webkit-scrollbar-thumb { background-color: var(--primary-darker); border-radius: 4px; }
+        body::-webkit-scrollbar-thumb:hover { background-color: var(--primary-color); }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="preloader"><div class="spinner"></div></div>
+    <div id="root"></div>
+    <div id="snow-container"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- EFFECTS & UTILS ---
+        const SnowfallEffect = () => {
+            useEffect(() => {
+                const container = document.getElementById('snow-container');
+                if (!container) return;
+                const createSnowflake = () => {
+                    const snowflake = document.createElement('div');
+                    snowflake.className = 'snowflake';
+                    const size = Math.random() * 3 + 1;
+                    snowflake.style.width = `${size}px`;
+                    snowflake.style.height = `${size}px`;
+                    snowflake.style.left = `${Math.random() * 100}%`;
+                    snowflake.style.animationDuration = `${Math.random() * 5 + 10}s`;
+                    snowflake.style.animationDelay = `${Math.random() * -15}s`;
+                    container.appendChild(snowflake);
+                };
+                for (let i = 0; i < 50; i++) createSnowflake();
+            }, []);
+            return null;
+        };
+
+        const useInteractiveCard = () => {
+            useEffect(() => {
+                const cards = document.querySelectorAll('.interactive-card');
+                const handleMouseMove = (e) => {
+                    const card = e.currentTarget;
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                    
+                    const rotateY = (x - rect.width / 2) / 20; // Reduced rotation for cleaner look
+                    const rotateX = (y - rect.height / 2) / -20;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                };
+                const handleMouseLeave = (e) => {
+                    e.currentTarget.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+                };
+                cards.forEach(card => {
+                    card.addEventListener('mousemove', handleMouseMove);
+                    card.addEventListener('mouseleave', handleMouseLeave);
+                });
+                return () => {
+                    cards.forEach(card => {
+                        card.removeEventListener('mousemove', handleMouseMove);
+                        card.removeEventListener('mouseleave', handleMouseLeave);
+                    });
+                };
+            }, []);
+        };
+
+        const useFadeInSection = () => {
+            useEffect(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) entry.target.classList.add('is-visible');
+                    });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.fade-in-section').forEach(section => observer.observe(section));
+            }, []);
+        };
+
+        const AuroraBackground = () => {
+            const [spots] = useState(() => Array.from({ length: 12 }).map(() => ({
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                size: `${Math.floor(Math.random() * 400 + 200)}px`,
+            })));
+            return (
+                <div className="aurora-background">
+                    {spots.map((spot, i) => (
+                        <div key={i} className="aurora-spot" style={{ top: spot.top, left: spot.left, width: spot.size, height: spot.size }} />
+                    ))}
+                </div>
+            );
+        };
+
+        const Logo = () => (
+            <a href="#home" className="cursor-pointer flex items-center gap-3 group">
+                <span className="text-white font-bold text-xl tracking-wide">Limited Stock</span>
+            </a>
+        );
+
+        const Header = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
+            const navItems = [
+                { id: 'services', label: 'Services' },
+                { id: 'scripts', label: 'Scripts' },
+                { id: 'payment', label: 'Payment' },
+                { id: 'contact', label: 'Support' },
+            ];
+            return (
+                <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(15,15,17,0.8)] backdrop-blur-md border-b border-white/5">
+                    <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                        <Logo />
+                        <nav className="hidden md:flex items-center gap-8">
+                            {navItems.map(item => (
+                                <a key={item.id} href={`#${item.id}`} className="text-gray-400 hover:text-white hover:text-neon transition-colors text-sm font-semibold uppercase tracking-wider">{item.label}</a>
+                            ))}
+                            <a href="#contact" className="bg-neon hover:bg-neon-hover text-white px-6 py-2 rounded-full font-bold transition-all transform hover:-translate-y-0.5">
+                                Open Ticket
+                            </a>
+                        </nav>
+                        <button className="md:hidden text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                        </button>
+                    </div>
+                </header>
+            );
+        };
+
+        const Hero = () => (
+            <section id="home" className="min-h-screen flex flex-col items-center justify-center text-center p-6 pt-24 relative">
+                <div className="fade-in-section max-w-4xl mx-auto z-10">
+                    <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
+                        BUY SCRIPTS <span className="text-neon">MARKETPLACE</span>
+                    </h1>
+                    <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+                        Your trusted hub for verified Roblox scripts. <br/>
+                        Safe, Verified, and Trusted Transactions Guaranteed.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="#services" className="px-8 py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-neon text-white font-bold transition-all w-full sm:w-auto">
+                            View Services
+                        </a>
+                        <a href="#contact" className="px-8 py-4 rounded-xl bg-neon hover:bg-neon-hover text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.3)] transition-all w-full sm:w-auto">
+                            Start Trading
+                        </a>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Services = () => {
+            const services = [
+                { title: "MM2 scripts", icon: "🔪", desc: "Buy Murder Mystery 2 scripts." },
+                { title: "Jailbreak", icon: "🚓", desc: "Buy Jailbreak scripts." },
+                { title: "Football Fusion 2", icon: "🏈", desc: "Buy FF2 scripts." },
+                { title: "Basketball legends", icon: "🏀", desc: "Buy Basketball Legends scripts." },
+                { title: "99 nights in a forest", icon: "🦌", desc: "Buy 99 nights scripts." },
+                { title: "Selling", icon: "💎", desc: "Purchase high-tier scripts from us." },
+            ];
+
+            return (
+                <section id="services" className="py-24 px-6 relative">
+                    <div className="max-w-7xl mx-auto">
+                        <h2 className="text-4xl font-bold text-center text-white mb-16 fade-in-section">
+                            Our <span className="text-neon">Services</span>
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {services.map((s, i) => (
+                                <div key={i} className="bg-theme-card p-8 rounded-2xl interactive-card fade-in-section group">
+                                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{s.icon}</div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">{s.title}</h3>
+                                    <p className="text-gray-400">{s.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const ScriptGenerator = () => {
+            const [userKey, setUserKey] = useState('');
+            const [isCopied, setIsCopied] = useState(false);
+
+            // The template string
+            const scriptText = `script_key="${userKey || "insert key"}";
+loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/50da2..."))()`;
+
+            const handleCopy = () => {
+                navigator.clipboard.writeText(scriptText).then(() => {
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 2000);
+                });
+            };
+
+            return (
+                <section id="scripts" className="py-24 px-6 bg-black/10">
+                    <div className="max-w-3xl mx-auto fade-in-section">
+                        <h2 className="text-4xl font-bold text-center text-white mb-4">
+                            Football Fusion 2 <span className="text-neon">Script</span>
+                        </h2>
+                        <p className="text-center text-gray-400 mb-10">
+                            Paste the key you received into the box below. Then, click the copy button to get your final script.
+                        </p>
+
+                        <div className="bg-[#0f0f11] border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden group">
+                             {/* Decorative glow behind */}
+                             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 blur-[80px] pointer-events-none rounded-full"></div>
+
+                             {/* Code Display Box */}
+                             <div className="bg-[#09090b] rounded-lg p-5 mb-6 border border-white/5 relative code-font overflow-x-auto">
+                                <pre className="text-gray-300 text-sm md:text-base leading-relaxed">
+<span className="text-purple-400">script_key</span>=<span className="text-green-400">"{userKey || "insert key"}"</span>;
+<span className="text-yellow-200">loadstring</span>(game:<span className="text-blue-400">HttpGet</span>(<span className="text-green-400">"https://api.luarmor.net/files/v3/loaders/50da2..."</span>))()
+                                </pre>
+                             </div>
+
+                             {/* Input & Action */}
+                             <div className="flex flex-col sm:flex-row gap-4">
+                                <input 
+                                    type="text" 
+                                    value={userKey}
+                                    onChange={(e) => setUserKey(e.target.value)}
+                                    placeholder="Paste your key here" 
+                                    className="flex-1 bg-[#18181b] border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[var(--primary-color)] transition-colors placeholder-gray-600"
+                                />
+                                <button 
+                                    onClick={handleCopy}
+                                    className={`px-8 py-4 rounded-xl font-bold transition-all transform active:scale-95 flex items-center justify-center gap-2 min-w-[160px] ${
+                                        isCopied 
+                                        ? 'bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)]' 
+                                        : 'bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                                    }`}
+                                >
+                                    {isCopied ? (
+                                        <>
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                                            Copied!
+                                        </>
+                                    ) : (
+                                        <>
+                                            Copy Script
+                                        </>
+                                    )}
+                                </button>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const PaymentMethods = () => {
+            return (
+                <section id="payment" className="py-24 px-6 bg-black/20">
+                    <div className="max-w-7xl mx-auto text-center fade-in-section">
+                        <h2 className="text-4xl font-bold text-white mb-6">Payment <span className="text-neon">Methods</span></h2>
+                        <p className="text-gray-400 mb-16 max-w-2xl mx-auto">We offer flexible payment options for all transactions. Tax covered deals available for Robux.</p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="bg-theme-card p-8 rounded-2xl border border-white/5 hover:border-[#00A2FF] transition-colors duration-300">
+                                <div className="h-16 flex items-center justify-center mb-6">
+                                    <span className="text-5xl">⏣ </span>
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Robux</h3>
+                                <p className="text-gray-400 text-sm">Tax covered deals available.</p>
+                            </div>
+
+                            <div className="bg-theme-card p-8 rounded-2xl border border-white/5 hover:border-[#00457C] transition-colors duration-300">
+                                <div className="h-16 flex items-center justify-center mb-6">
+                                    <span className="text-5xl">💳</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">PayPal/Cashapp</h3>
+                                <p className="text-gray-400 text-sm">Secure & Fast Transactions.</p>
+                            </div>
+
+                            <div className="bg-theme-card p-8 rounded-2xl border border-white/5 hover:border-[#F7931A] transition-colors duration-300">
+                                <div className="h-16 flex items-center justify-center mb-6">
+                                    <span className="text-5xl">₿</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Crypto</h3>
+                                <p className="text-gray-400 text-sm">LTC / BTC Accepted.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Contact = () => (
+            <section id="contact" className="py-24 px-6">
+                <div className="max-w-4xl mx-auto text-center fade-in-section">
+                    <div className="bg-gradient-to-b from-[rgba(139,92,246,0.1)] to-transparent p-1 rounded-3xl">
+                        <div className="bg-theme-card rounded-[22px] p-10 border border-[var(--primary-darker)] shadow-[0_0_50px_rgba(139,92,246,0.15)]">
+                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
+                                Ready to <span className="text-neon">Trade?</span>
+                            </h2>
+                            
+                            <div className="space-y-6 text-left max-w-2xl mx-auto bg-black/40 p-6 rounded-xl border border-white/5">
+                                <div className="flex items-start gap-4">
+                                    <span className="text-2xl">⚠️</span>
+                                    <div>
+                                        <h4 className="text-white font-bold mb-1">Verified Contact Only</h4>
+                                        <p className="text-gray-400 text-sm">Do not message anyone else claiming to trade under this name. We only operate via tickets.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <span className="text-2xl">🍷</span>
+                                    <div>
+                                        <h4 className="text-white font-bold mb-1">Open a Ticket</h4>
+                                        <p className="text-gray-400 text-sm">Go to <span className="text-neon font-mono bg-white/5 px-1 rounded">⁠support-ticket</span> in our Discord to confirm availability before trading.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-10">
+                                <a href="https://discord.gg/TXaW232xQN" target="_blank" className="inline-flex items-center gap-3 bg-[#5865F2] hover:bg-[#4752C4] text-white px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg">
+                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.36981C18.7915 3.74873 17.189 3.28434 15.5298 3.00003C15.5298 3.00003 15.1518 3.42189 14.865 3.76878C13.0476 3.22018 11.1492 3.22018 9.423 3.76878C9.135 3.42189 8.7582 3 8.7582 3C7.09901 3.28434 5.49652 3.74873 3.97017 4.36981C0.324569 9.87328 -0.463321 15.1072 0.871542 20.2078C2.6516 21.6213 4.59436 22.548 6.65283 23C7.26284 22.3486 7.80165 21.631 8.256 20.8522C7.38573 20.4866 6.58162 20.021 5.84279 19.4515C6.11591 19.2633 6.3802 19.0664 6.6346 18.8608C10.0322 20.6453 14.2523 20.6453 17.6487 18.8608C17.9031 19.0664 18.1674 19.2633 18.4405 19.4515C17.7017 20.021 16.9064 20.4866 16.0273 20.8522C16.4817 21.631 17.0205 22.3486 17.6305 23C19.689 22.548 21.6317 21.6213 23.4118 20.2078C24.5828 14.2458 23.5938 8.81315 20.317 4.36981ZM8.02004 16.5392C6.88337 16.5392 6.00004 15.503 6.00004 14.1682C6.00004 12.8334 6.88337 11.7972 8.02004 11.7972C9.15671 11.7972 10.04 12.8334 10.0203 14.1682C10.0203 15.503 9.15671 16.5392 8.02004 16.5392ZM16.2687 16.5392C15.132 16.5392 14.2487 15.503 14.2487 14.1682C14.2487 12.8334 15.132 11.7972 16.2687 11.7972C17.4054 11.7972 18.2887 12.8334 18.2689 14.1682C18.2689 15.503 17.4054 16.5392 16.2687 16.5392Z" /></svg>
+                                    Join Discord to Trade
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Footer = () => (
+            <footer className="py-8 text-center border-t border-white/5 text-gray-500 text-sm">
+                <p>Safe, Verified, and Trusted Transactions Guaranteed.</p>
+                <p className="mt-2">© 2025 Limited Stock. All rights reserved.</p>
+            </footer>
+        );
+
+        const App = () => {
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+            useEffect(() => {
+                const preloader = document.getElementById('preloader');
+                if (preloader) {
+                    setTimeout(() => preloader.classList.add('loaded'), 500);
+                }
+            }, []);
+
+            useInteractiveCard();
+            useFadeInSection();
+
+            return (
+                <div className="min-h-screen bg-theme-dark text-theme-primary overflow-hidden">
+                    <SnowfallEffect />
+                    <AuroraBackground />
+                    
+                    <Header isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+                    
+                    {isMobileMenuOpen && (
+                        <div className="fixed inset-0 z-40 bg-black/95 flex flex-col items-center justify-center gap-8 text-2xl font-bold md:hidden">
+                            <a href="#services" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-neon">Services</a>
+                            <a href="#scripts" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-neon">Scripts</a>
+                            <a href="#payment" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-neon">Payment</a>
+                            <a href="#contact" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-neon">Contact</a>
+                        </div>
+                    )}
+
+                    <main>
+                        <Hero />
+                        <Services />
+                        <ScriptGenerator />
+                        <PaymentMethods />
+                        <Contact />
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
